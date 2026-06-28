@@ -1,0 +1,144 @@
+# Troubleshooting Guide
+
+## Issue 1
+
+### Error
+
+Connection creation failed.
+
+### Cause
+
+Missing IAM permission.
+
+### Solution
+
+Update Glue IAM Role with required permissions.
+
+---
+
+## Issue 2
+
+### Error
+
+Failed to assume customer's role.
+
+### Cause
+
+STS endpoint unavailable.
+
+### Solution
+
+Configure STS endpoint and IAM trust relationship.
+
+---
+
+## Issue 3
+
+### Error
+
+Unable to resolve valid connection.
+
+### Cause
+
+Incorrect Glue Connection configuration.
+
+### Solution
+
+Verify:
+
+- JDBC URL
+- VPC
+- Security Group
+- Subnet
+- IAM Role
+
+---
+
+## Issue 4
+
+### Error
+
+S3 Endpoint Validation Failed.
+
+### Cause
+
+Missing VPC Endpoint.
+
+### Solution
+
+Create Amazon S3 Gateway Endpoint.
+
+---
+
+## Issue 5
+
+### Error
+
+Redshift Authentication Failed.
+
+### Cause
+
+Invalid username or password.
+
+### Solution
+
+Verify credentials and security group.
+
+---
+
+## Issue 6
+
+### Error
+
+Glue Job Failed
+
+### Cause
+
+Schema mismatch.
+
+### Solution
+
+Validate CSV schema before processing.
+
+---
+
+## Issue 7
+
+### Error
+
+Step Function Failed
+
+### Cause
+
+Glue Job exception.
+
+### Solution
+
+Review CloudWatch Logs and fix Glue Job.
+
+---
+
+## Issue 8
+
+### Error
+
+SNS Email Not Received
+
+### Cause
+
+Subscription not confirmed.
+
+### Solution
+
+Confirm email subscription.
+
+---
+
+## Best Practices
+
+- Monitor CloudWatch Logs
+- Validate input data
+- Use Parquet format
+- Avoid hardcoded credentials
+- Implement retry mechanism
+- Enable Glue bookmarks for incremental processing

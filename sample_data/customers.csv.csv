@@ -1,0 +1,16 @@
+customer_id,customer_name,email,phone,date_of_birth,gender,city,state,country,account_status,total_orders,total_spent
+1, Ganesh More ,GANESH@GMAIL.COM,9876543210,15-09-1995,Male,Pune,Maharashtra,India,Active,15,25000
+2,John Smith,john@gmail.com,9876543211,12-05-1990,Male,Mumbai,Maharashtra,India,Active,10,18000
+3,Riya Sharma,RIYA@GMAIL.COM,9876543212,20-08-1998,Female,Delhi,Delhi,India,Active,8,12000
+4,Amit Patel,amit@gmail.com,,15-02-1992,Male,Ahmedabad,Gujarat,India,Inactive,5,8000
+5,Neha Verma,neha@gmail.com,9876543214,10-07-1997,Female,Bangalore,Karnataka,India,Active,12,22000
+6, Rohit Singh ,ROHIT@GMAIL.COM,9876543215,22-11-1991,Male,Chennai,Tamil Nadu,India,Active,7,9500
+7,,priya@gmail.com,9876543216,18-04-1999,Female,Hyderabad,Telangana,India,Active,9,14000
+8,Karan Shah,karan@gmail,9876543217,30-01-1994,Male,Surat,Gujarat,India,Active,6,11000
+9,Meera Joshi,MEERA@GMAIL.COM,9876543218,25-06-1996,Female,Nagpur,Maharashtra,India,Active,14,27000
+10,Sachin Patil,sachin@gmail.com,9876543219,14-09-1993,Male,Pune,Maharashtra,India,Active,11,19000
+11, Ganesh More ,GANESH@GMAIL.COM,9876543210,15-09-1995,Male,Pune,Maharashtra,India,Active,15,25000
+12,Anjali Gupta,anjali@gmail.com,9876543220,11-03-1998,Female,Delhi,Delhi,India,Active,13,21000
+13,Vikram Rao,,9876543221,05-12-1990,Male,Mumbai,Maharashtra,India,Inactive,4,5000
+14,Deepak Kumar,deepak@gmail.com,9876543222,01-10-1989,Male,,,India,Active,16,30000
+15,Pooja Jain,POOJA@GMAIL.COM,9876543223,16-05-1997,Female,Jaipur,Rajasthan,India,Active,9,15000

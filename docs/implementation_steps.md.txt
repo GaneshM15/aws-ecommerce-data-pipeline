@@ -1,0 +1,154 @@
+# Project Implementation Steps
+
+## Step 1
+
+Create Raw and Processed Amazon S3 buckets.
+
+Example:
+
+- raw-bucket-gm
+- processed-bucket-gm
+
+---
+
+## Step 2
+
+Upload customer CSV file into the Raw bucket.
+
+---
+
+## Step 3
+
+Configure Amazon S3 Event Notification.
+
+Event:
+
+ObjectCreated
+
+Destination:
+
+AWS Lambda
+
+---
+
+## Step 4
+
+Create Lambda Function
+
+Name:
+
+trigger_ecommerce_customer_pipeline
+
+Purpose:
+
+Automatically trigger AWS Step Functions whenever a CSV file is uploaded.
+
+---
+
+## Step 5
+
+Create AWS Step Function
+
+Workflow:
+
+S3 Upload
+
+↓
+
+Lambda
+
+↓
+
+Glue Job 1
+
+↓
+
+Glue Job 2
+
+↓
+
+SNS Notification
+
+---
+
+## Step 6
+
+Develop Glue Job 1 using PySpark.
+
+Responsibilities:
+
+- Read CSV
+- Remove duplicates
+- Handle null values
+- Validate records
+- Mask email
+- Mask phone
+- Generate record hash
+- Add created_at timestamp
+- Write Parquet to Processed S3
+
+---
+
+## Step 7
+
+Develop Glue Job 2.
+
+Responsibilities:
+
+- Read Parquet
+- Select required columns
+- Load into Amazon Redshift
+
+---
+
+## Step 8
+
+Create Amazon Redshift table.
+
+Schema:
+
+ecommerce_dw
+
+Table:
+
+dim_customer
+
+---
+
+## Step 9
+
+Configure SNS.
+
+Purpose:
+
+Notify success or failure of pipeline execution.
+
+---
+
+## Step 10
+
+Enable CloudWatch Logs.
+
+Monitor:
+
+- Lambda
+- Glue Jobs
+- Step Functions
+
+---
+
+## Final Result
+
+CSV Upload
+
+↓
+
+Automated ETL
+
+↓
+
+Amazon Redshift
+
+↓
+
+Analytics Ready

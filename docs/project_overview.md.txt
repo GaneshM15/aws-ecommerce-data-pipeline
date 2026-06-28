@@ -1,0 +1,64 @@
+# AWS E-Commerce Data Pipeline - Project Overview
+
+## Project Description
+
+This project is a production-level AWS Data Engineering pipeline that automates the ingestion, transformation, and loading of customer data from Amazon S3 into Amazon Redshift.
+
+The solution follows an event-driven architecture where uploading a CSV file to an S3 bucket automatically triggers the complete ETL pipeline without any manual intervention.
+
+---
+
+## Business Objective
+
+The objective of this project is to automate customer data processing while ensuring:
+
+- High availability
+- Scalability
+- Data quality
+- Data validation
+- PII masking
+- Automated notifications
+- Centralized reporting
+
+---
+
+## AWS Services Used
+
+- Amazon S3
+- AWS Lambda
+- AWS Step Functions
+- AWS Glue
+- Amazon Redshift
+- Amazon SNS
+- Amazon CloudWatch
+- AWS IAM
+
+---
+
+## Pipeline Flow
+
+1. Customer CSV file is uploaded into the Raw S3 bucket.
+2. S3 Event Notification triggers AWS Lambda.
+3. Lambda starts the Step Function workflow.
+4. Step Function executes Glue Job 1.
+5. Glue Job 1 cleans, validates, and transforms the raw data.
+6. Cleaned data is stored as Parquet files in the Processed S3 bucket.
+7. Step Function executes Glue Job 2.
+8. Glue Job 2 loads processed data into Amazon Redshift.
+9. SNS sends success or failure notifications.
+10. CloudWatch stores execution logs for monitoring.
+
+---
+
+## Key Features
+
+- Fully automated ETL pipeline
+- Event-driven architecture
+- PySpark transformations
+- Incremental processing
+- PII masking
+- Data validation
+- Parquet output
+- Redshift data warehouse integration
+- CloudWatch monitoring
+- SNS notifications

@@ -1,0 +1,108 @@
+# Project Explanation for Interview
+
+## Project Name
+
+Production-Level AWS Data Engineering Pipeline
+
+---
+
+## Project Objective
+
+The objective of this project was to automate customer data ingestion, transformation, validation, and loading into Amazon Redshift using AWS serverless services.
+
+---
+
+## Technologies Used
+
+- Python
+- PySpark
+- AWS Glue
+- Amazon S3
+- AWS Lambda
+- AWS Step Functions
+- Amazon Redshift
+- Amazon SNS
+- CloudWatch
+- IAM
+
+---
+
+## Architecture
+
+Raw S3
+
+↓
+
+Lambda Trigger
+
+↓
+
+AWS Step Functions
+
+↓
+
+Glue Job 1
+
+↓
+
+Processed S3 (Parquet)
+
+↓
+
+Glue Job 2
+
+↓
+
+Amazon Redshift
+
+↓
+
+SNS Notification
+
+---
+
+## My Responsibilities
+
+- Designed complete AWS architecture
+- Developed Glue PySpark jobs
+- Implemented data validation
+- Masked PII information
+- Built Lambda trigger
+- Developed Step Function workflow
+- Loaded data into Redshift
+- Configured SNS notifications
+- Implemented monitoring using CloudWatch
+- Troubleshot production issues
+
+---
+
+## Challenges Faced
+
+- Glue Connection Issues
+- IAM Permission Errors
+- STS Endpoint Errors
+- Redshift Connectivity
+- Schema Validation
+- Incremental Processing
+
+---
+
+## Outcome
+
+- Fully automated ETL pipeline
+- No manual intervention
+- Faster data processing
+- Improved data quality
+- Scalable architecture
+- Analytics-ready data warehouse
+
+---
+
+## Future Enhancements
+
+- CI/CD using GitHub Actions
+- Infrastructure as Code using Terraform
+- Data Quality Framework
+- Great Expectations Integration
+- Apache Airflow Scheduling
+- AWS Lake Formation
