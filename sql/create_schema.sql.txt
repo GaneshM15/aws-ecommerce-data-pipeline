@@ -1,0 +1,10 @@
+-- ===========================================================
+-- Create Schema
+-- ===========================================================
+
+CREATE SCHEMA IF NOT EXISTS ecommerce_dw;
+
+-- Verify Schema
+SELECT schema_name
+FROM information_schema.schemata
+WHERE schema_name = 'ecommerce_dw';

@@ -1,0 +1,78 @@
+import sys
+from awsglue.utils import getResolvedOptions
+from pyspark.context import SparkContext
+from awsglue.context import GlueContext
+from awsglue.job import Job
+from awsglue.dynamicframe import DynamicFrame
+from pyspark.sql.functions import current_timestamp
+
+args = getResolvedOptions(
+    sys.argv,
+    [
+        "JOB_NAME",
+        "PROCESSED_S3_PATH",
+        "TempDir"
+    ]
+)
+
+sc = SparkContext()
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+
+job = Job(glueContext)
+job.init(args["JOB_NAME"], args)
+
+# Read processed parquet data from S3
+df = spark.read.parquet(args["PROCESSED_S3_PATH"])
+
+print("Source Schema:")
+df.printSchema()
+
+# Prepare final customer dimension data
+dim_customer_df = (
+    df.select(
+        "customer_id",
+        "customer_name",
+        "email_masked",
+        "phone_masked",
+        "date_of_birth",
+        "gender",
+        "city",
+        "state",
+        "country",
+        "account_status",
+        "total_orders",
+        "total_spent",
+        "load_date",
+        "record_hash",
+        "created_at"
+    )
+    .dropDuplicates(["customer_id"])
+    .withColumn("updated_at", current_timestamp())
+)
+
+print("Final Schema:")
+dim_customer_df.printSchema()
+
+print("Final Count:", dim_customer_df.count())
+
+# Convert DataFrame to DynamicFrame
+dim_customer_dyf = DynamicFrame.fromDF(
+    dim_customer_df,
+    glueContext,
+    "dim_customer_dyf"
+)
+
+# Write to Redshift Serverless using Glue Connection
+glueContext.write_dynamic_frame.from_jdbc_conf(
+    frame=dim_customer_dyf,
+    catalog_connection="Redshift connection1",
+    connection_options={
+        "dbtable": "ecommerce_dw.dim_customer",
+        "database": "dev"
+    },
+    redshift_tmp_dir=args["TempDir"],
+    transformation_ctx="redshift_write"
+)
+
+job.commit()

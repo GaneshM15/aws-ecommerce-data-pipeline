@@ -1,0 +1,65 @@
+import json
+import boto3
+from datetime import datetime
+
+stepfunctions = boto3.client("stepfunctions")
+sns = boto3.client("sns")
+
+STEP_FUNCTION_ARN = "arn:aws:states:ap-south-1:384344322125:stateMachine:ETL-Pipeline"
+SNS_TOPIC_ARN = "arn:aws:sns:ap-south-1:384344322125:notification"
+
+
+def lambda_handler(event, context):
+
+    print("===== Lambda Triggered Successfully =====")
+    print("Received event:", json.dumps(event))
+
+    for record in event["Records"]:
+        bucket = record["s3"]["bucket"]["name"]
+        key = record["s3"]["object"]["key"]
+
+        print("Bucket:", bucket)
+        print("Key:", key)
+
+        if not key.endswith(".csv"):
+            print("Skipped non-csv file:", key)
+            continue
+
+        payload = {
+            "bucket": bucket,
+            "key": key,
+            "raw_s3_path": f"s3://{bucket}/{key}",
+            "trigger_time": datetime.utcnow().isoformat()
+        }
+
+        response = stepfunctions.start_execution(
+            stateMachineArn=STEP_FUNCTION_ARN,
+            name="customer-pipeline-" + datetime.utcnow().strftime("%Y%m%d%H%M%S"),
+            input=json.dumps(payload)
+        )
+
+        execution_arn = response["executionArn"]
+        print("Step Function started:", execution_arn)
+
+        sns.publish(
+            TopicArn=SNS_TOPIC_ARN,
+            Subject="Lambda Triggered Successfully",
+            Message=f"""
+Lambda triggered successfully.
+
+Bucket: {bucket}
+File: {key}
+Raw S3 Path: s3://{bucket}/{key}
+Step Function Execution: {execution_arn}
+Trigger Time: {payload["trigger_time"]}
+"""
+        )
+
+        print("SNS notification sent successfully")
+
+    print("Pipeline triggered successfully")
+
+    return {
+        "statusCode": 200,
+        "body": "Pipeline triggered successfully"
+    }

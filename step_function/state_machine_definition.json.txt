@@ -1,0 +1,107 @@
+{
+  "Comment": "Ecommerce customer data lake pipeline with Glue jobs and SNS notifications",
+  "StartAt": "StartGlueJob1",
+  "States": {
+    "StartGlueJob1": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "raw_to_processed_customer_job",
+        "Arguments": {
+          "--RAW_S3_PATH.$": "$.raw_s3_path",
+          "--PROCESSED_S3_PATH": "s3://processed-bucket-gm/processed/customer/",
+          "--TempDir": "s3://processed-bucket-gm/temp/"
+        }
+      },
+      "Next": "Job1Succeeded",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Job1Failed"
+        }
+      ]
+    },
+    "Job1Succeeded": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:ap-south-1:384344322125:notification",
+        "Message": "Glue Job 1 completed successfully. Raw data processed to S3.",
+        "Subject": "Glue Job 1 Success"
+      },
+      "Next": "StartGlueJob2"
+    },
+    "StartGlueJob2": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "processed_to_redshift_customer_job",
+        "Arguments": {
+          "--PROCESSED_S3_PATH": "s3://processed-bucket-gm/processed/customer/",
+          "--REDSHIFT_URL": "jdbc:redshift://your-redshift-endpoint:5439/dev",
+          "--REDSHIFT_USER": "awsuser",
+          "--REDSHIFT_PASSWORD": "your_password",
+          "--TempDir": "s3://processed-bucket-gm/temp/"
+        }
+      },
+      "Next": "Job2Succeeded",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "Next": "Job2Failed"
+        }
+      ]
+    },
+    "Job2Succeeded": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:ap-south-1:384344322125:notification",
+        "Message": "Glue Job 2 completed successfully. Processed data loaded into Redshift.",
+        "Subject": "Glue Job 2 Success"
+      },
+      "Next": "PipelineSucceeded"
+    },
+    "PipelineSucceeded": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:ap-south-1:384344322125:notification",
+        "Message": "Full customer data lake pipeline completed successfully. Data loaded into Redshift.",
+        "Subject": "Pipeline Success"
+      },
+      "Next": "PipelineSuccess"
+    },
+    "Job1Failed": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:ap-south-1:384344322125:notification",
+        "Message": "Glue Job 1 failed. Please check AWS Glue logs and Step Function execution details.",
+        "Subject": "Glue Job 1 Failed"
+      },
+      "Next": "PipelineFailed"
+    },
+    "Job2Failed": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "arn:aws:sns:ap-south-1:384344322125:notification",
+        "Message": "Glue Job 2 failed. Please check Redshift connection, S3 processed path, and Glue logs.",
+        "Subject": "Glue Job 2 Failed"
+      },
+      "Next": "PipelineFailed"
+    },
+    "PipelineSuccess": {
+      "Type": "Succeed"
+    },
+    "PipelineFailed": {
+      "Type": "Fail",
+      "Cause": "Customer data lake pipeline failed"
+    }
+  }
+}

@@ -1,0 +1,80 @@
+import sys
+from awsglue.utils import getResolvedOptions
+from pyspark.context import SparkContext
+from awsglue.context import GlueContext
+from awsglue.job import Job
+from pyspark.sql.functions import *
+from pyspark.sql.types import IntegerType, DoubleType
+
+args = getResolvedOptions(sys.argv, ["JOB_NAME", "RAW_S3_PATH", "PROCESSED_S3_PATH"])
+
+sc = SparkContext()
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+job = Job(glueContext)
+job.init(args["JOB_NAME"], args)
+
+spark.conf.set("spark.sql.parquet.compression.codec", "snappy")
+spark.conf.set("spark.sql.adaptive.enabled", "true")
+spark.conf.set("spark.sql.sources.partitionOverwriteMode", "dynamic")
+
+RAW_S3_PATH = args["RAW_S3_PATH"]
+PROCESSED_S3_PATH = args["PROCESSED_S3_PATH"]
+
+df = (
+    spark.read.option("header", "true").option("inferSchema", "false").option("mode", "PERMISSIVE").csv(RAW_S3_PATH)
+)
+
+for c in df.columns:
+    df = df.withColumnRenamed(c, c.strip().lower())
+
+for c in df.columns:
+    df = df.withColumn(c, trim(col(c)))
+
+final_df = (
+    df
+    .withColumn("customer_id", col("customer_id").cast("string"))
+    .withColumn("customer_name", initcap(col("customer_name")))
+    .withColumn("email", lower(col("email")))
+    .withColumn("phone", regexp_replace(col("phone"), "[^0-9]", ""))
+    .withColumn("date_of_birth", to_date(col("date_of_birth"), "yyyy-MM-dd"))
+    .withColumn("gender", initcap(col("gender")))
+    .withColumn("city", initcap(col("city")))
+    .withColumn("state", initcap(col("state")))
+    .withColumn("country", upper(col("country")))
+    .withColumn("account_status", initcap(col("account_status")))
+    .withColumn("total_orders", col("total_orders").cast(IntegerType()))
+    .withColumn("total_spent", col("total_spent").cast(DoubleType()))
+    .filter(col("customer_id").isNotNull())
+    .filter(col("customer_name").isNotNull())
+    .filter(col("email").isNotNull())
+    .filter(col("phone").isNotNull())
+    .filter(col("total_orders") >= 0)
+    .filter(col("total_spent") >= 0)
+    .dropDuplicates(["customer_id"])
+    .withColumn("email_masked", regexp_replace(col("email"), r"(^.).*(@.*$)", r"$1*****$2"))
+    .withColumn("phone_masked", regexp_replace(col("phone"), r"(\d{2})\d+(\d{2})", r"$1******$2"))
+    .withColumn("load_date", current_date())
+    .withColumn("created_at", current_timestamp())
+    .withColumn(
+        "record_hash",
+        sha2(concat_ws("||",
+            "customer_id", "customer_name", "email_masked", "phone_masked",
+            col("date_of_birth").cast("string"), "gender", "city", "state",
+            "country", "account_status",
+            col("total_orders").cast("string"),
+            col("total_spent").cast("string")
+        ), 256)
+    )
+    .select(
+        "customer_id", "customer_name", "email_masked", "phone_masked",
+        "date_of_birth", "gender", "city", "state", "country",
+        "account_status", "total_orders", "total_spent",
+        "load_date", "record_hash", "created_at"
+    )
+)
+
+final_df.coalesce(1).write.mode("overwrite").option("compression", "snappy") \
+    .partitionBy("load_date").parquet(PROCESSED_S3_PATH)
+
+job.commit()
